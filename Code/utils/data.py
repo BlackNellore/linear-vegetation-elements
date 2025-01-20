@@ -42,22 +42,20 @@ def las_to_csv(input_path, output_path=None, overwrite=False):
     if os.path.isfile(output_path) and overwrite is False:
         print('CSV output file already exists.')
     else:
-        json = """{{
-        "pipeline":[
+        json = """[
             {{
-                "type":"readers.las",
                 "filename":"{}"
             }},
             {{
-                "type":"writers.text",
                 "filename":"{}"
             }}
-        ]}}
+        ]
         """
 
         pipeline = pdal.Pipeline(json.format(input_path, output_path))
+        # pipeline = pdal.Reader.las(filename=input_path).pipeline()
 
-        pipeline.validate()
+        # pipeline.validate()
         pipeline.execute()
 
     return output_path
@@ -90,41 +88,29 @@ def sample(input_path, distance, output_path=None,
      : file
          The downsampled point cloud
     """
-
-    json = """{{
-    "pipeline":[
+    json = """[
         {{
-            "type":"readers.text",
             "filename":"{input_path}"
         }},
         {{
             "type":"filters.range",
-            "limits":"Classification[{veg_class}:{veg_class}]"
-        }},
-        {{
-            "type":"filters.assign",
-            "assignment":"Z[-99999:]=0"
+            "limits":"Classification[{range}]"
         }},
         {{
             "type":"filters.sample",
             "radius":{radius}
         }},
         {{
-            "type":"writers.text",
-            "filename":"{output_path}",
-            "order":"X,Y",
-            "keep_unspecified":"false"
+            "filename":"{output_path}"
         }}
-    ]}}
+    ]
     """
 
     input_path = os.path.abspath(input_path).replace('\\', '/')
 
     if output_path is None:
         path_root, ext = os.path.splitext(input_path)
-        output_path = '{}_sub_{}{}'.format(path_root,
-                                           str(distance).replace('.', '_'),
-                                           ext)
+        output_path = f'{path_root}_sub_{str(distance).replace('.', '_')}{ext}'
     else:
         output_path = os.path.abspath(output_path).replace('\\', '/')
 
@@ -132,10 +118,11 @@ def sample(input_path, distance, output_path=None,
         print('Subsampled output file already exists.')
     else:
         pipeline = pdal.Pipeline(json.format(input_path=input_path,
-                                             veg_class=vegetation_class,
+                                             range="3:5",
                                              radius=distance,
                                              output_path=output_path))
-        pipeline.validate()
+        # pipeline = pdal.Reader.las(filename=input_path).pipeline()
+        # pipeline.validate()
         pipeline.execute()
 
     return output_path

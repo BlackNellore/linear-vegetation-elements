@@ -14,23 +14,23 @@ from extraction.neighbourhood import compute_features
 from utils.data import las_to_csv, sample
 
 # %% file paths
-las_path = "../Data/ResearchArea.las"
+las_path = "Code/Data/ResearchArea2.las"
 
 # %% Prepare data and load into python
 # downsample point cloud and convert to csv
-las = sample(las_path, 0.3)
+las = sample(las_path, 3)
 csv_path = las_to_csv(las)
 
 # Load the csv point cloud file
 print("Loading point cloud csv file using pandas..")
 point_cloud = pd.read_csv(csv_path)
-point_cloud.drop(columns=['ScanDirectionFlag', 'EdgeOfFlightLine', 'Classification',
+point_cloud.drop(columns=['ScanDirectionFlag', 'EdgeOfFlightLine',
                           'ScanAngleRank', 'UserData', 'PointSourceId', 'GpsTime',
                           'Red', 'Green', 'Blue'], inplace=True)
 point_cloud.rename(columns={'Intensity': 'intensity', 'ReturnNumber': 'return_number',
                             'NumberOfReturns': 'number_of_returns'}, inplace=True)
 
-points = point_cloud.as_matrix(columns=['X', 'Y', 'Z'])
+points = point_cloud[['X', 'Y', 'Z']].values
 
 # %% Compute nearest neighbours
 print("Computing nearest neighbours..")
